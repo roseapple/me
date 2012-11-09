@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+
+	<!-- include jQuery library -->
+	<script src="http://code.jquery.com/jquery-1.8.1.min.js"></script>
+	<script>
+
+		// This is the scary part, but it simply says: "If the object.property 'localStorage.twitterSearch' exists,
+		// iterate over it and create readable data out of it. Otherwise, create that object.property using Ajax."
+
+		// I suggest looking at the else-statement below before looking at our intitial if-statement, as it is
+		// actually the first step in the process.
+
+		if(localStorage.twitterSearch) {
+
+			// Create the variable 'twitterData' as a parsed version of the string-value 'localStorage.twitterSearch'.
+			// Parsing creates objects. 
+			var twitterData = JSON.parse(localStorage.twitterSearch);
+			// Create an empty array (for iterating over our formatted data later).
+			var formattedData = [];
+
+			// Just as the week before, this is our iteration, wherein we'll wrap URLs in an <a> tag. Here it is saying, 
+			// "For all properties of the object.property 'twitterData.results', the key will be 'index' and its value will
+			// be 'tweet'."
+			$.each(twitterData.results, function(index, tweet){
+
+				// Remember, our value 'tweet' is itself an object. By setting a variable to the object.property 'tweet.text'
+				// we are accessing the part of the object that is the "text," AKA the tweet itself. 
+				var text=tweet.text;
+
+				// if a URL is present, wrap it in an <a> tag
+				// -- stuff like "url.url" and "url.expanded_url" refers to keys that call values from the Twitter JSON object
+				if(tweet.entities.urls){
+					$.each(tweet.entities.urls, function(index, url){
+						text=text.replace(url.url, '<a href="' + url.expanded_url + '">' + url.display_url + '</a>');
+					})
+				}
+
+				// Add (push) the following to the array 'formattedData[]'.
+				formattedData.push({
+					text: tweet.text,
+					from_user_name: tweet.from_user_name
+				});
+
+			});
+
+			//Create a string version of our array as an object.property of the object 'localStorage'.
+			localStorage.formattedData = JSON.stringify(formattedData);
+
+			// Confirm success with a console.logged cry of joy.
+			console.log('hooray');
+
+		} else {
+
+			$.ajax({
+
+				// our query URL
+				url: 'http://search.twitter.com/search.json?q=obama%20-romney%20%3A%28&page=5&result_type=recent&rpp=100&until=2012-10-19',
+
+				// our specified data-type
+				dataType:'jsonp',
+
+				// If the Ajax was successful, use its 'response' to our query to create 'localStorage.twitterSearch'. Remember, 
+				// 'success:function()'' takes an argument, representing the query's response. We can call it whatever we want: 
+				// 'response', 'answer', 'stuffWeAskedFor', etc.
+				success:function(response){
+
+					// Create 'localStorage.twitterSearch' by turning the response into a string value.
+					// This way, we can work with it as text.
+					localStorage.twitterSearch = JSON.stringify(response);
+
+					// Console.log "I think that worked," as confirmation that our Ajax was successful. 
+					console.log('I think that worked.');
+
+				},
+
+				// Send an alert if our Ajax was failed.
+				error: function(){
+					alert('Error, error: does not compute.');
+				}
+
+			})
+
+
+		}
+
+
+	</script>
+
+</head>
+<body>
+
+</body>
+</html>
